@@ -2,6 +2,8 @@
 
 This is a test for educational purpose of how a zero knowledge proof mixer works.
 
+Live test [Here](https://zkp-mixer-0xblacksonic.vercel.app/)
+
 ### _- Work in Progress -_
 
 ### Requirements:
