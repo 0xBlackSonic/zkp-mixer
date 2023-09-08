@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  background-color: #111827;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+
+  --toastify-color-dark: #2dd4bf0d;
+  --toastify-text-color-dark: #2dd4bf;
+  --toastify-color-progress-dark: #2dd4bf;
+  --toastify-font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+
+  --toastify-color-error: #2dd4bf0d;
+  --toastify-text-color-error: #2dd4bf;
+  --toastify-color-progress-error: #d25454;
+  --toastify-icon-color-error: #d25454;
+}
+
+#root {
+  position: relative;
+  min-height: 100vh;
+}
