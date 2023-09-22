@@ -2,7 +2,7 @@
 
 /**
  * This class regenerates the merkle tree
- * at the time of deposit.
+ * with all the leaves
  */
 import MiMC5Sponge from "./MiMC5Sponge";
 
@@ -10,7 +10,6 @@ export class MerkleTree {
   private nLevels: number;
   private tree: any[];
   private root: bigint;
-  private leafIndex: number;
 
   private levelDefaults: bigint[] = [
     10743404813422566213810265938167437702127461516201222674448064898294038940299n,
@@ -25,18 +24,17 @@ export class MerkleTree {
     72051951690337201200119845553030809436309900161084863070192560066843051838251n,
   ];
 
-  constructor(leafIndex: number, leaves: bigint[], depth: number) {
+  constructor(leaves: bigint[], depth: number) {
     this.nLevels = depth;
     this.tree = new Array<number>();
-    this.tree[0] = leaves.slice(0, leafIndex + 1);
+    this.tree[0] = leaves;
     this.root = 0n;
-    this.leafIndex = leafIndex;
 
     this.buildMerkleTree();
   }
 
   private buildMerkleTree() {
-    let nLeaves: number = this.leafIndex + 1;
+    let nLeaves: number = this.tree[0].length;
 
     let commitment: any;
     const oddCommitments: boolean = nLeaves % 2 === 1 ? true : false;
@@ -72,25 +70,36 @@ export class MerkleTree {
     this.root = this.tree[10][0];
   }
 
-  getHashElements(leafIndex: number): {
+  getHashElements(
+    leafIndex: number,
+    lastLeaf: number
+  ): {
     hashPairings: string[];
     hashDirections: number[];
+    commitments: string[];
   } {
-    const tempPairings: bigint[] = new Array<bigint>(10);
+    const hashPairings: string[] = new Array<string>(10);
     const hashDirections: number[] = new Array<number>(10);
+    const commitments: string[] = new Array<string>(10);
     let index: number = leafIndex;
+    let commitmentIndex: number = leafIndex;
 
     for (let i: number = 0; i < this.nLevels; i++) {
-      tempPairings[i] =
-        index % 2 === 0 ? this.tree[i][index + 1] : this.tree[i][index - 1];
+      if (index % 2 === 0) {
+        hashPairings[i] = this.tree[i][index + 1].toString();
+        const tempIndex = leafIndex + (2 ** (i + 1) - 1);
+        commitmentIndex = tempIndex > lastLeaf ? lastLeaf : tempIndex;
+      } else {
+        hashPairings[i] = this.tree[i][index - 1].toString();
+      }
+
+      commitments[i] = this.tree[0][commitmentIndex].toString();
       hashDirections[i] = index % 2;
 
       index >>= 1;
     }
 
-    const hashPairings = tempPairings.map((hash: bigint) => hash.toString());
-
-    return { hashPairings, hashDirections };
+    return { hashPairings, hashDirections, commitments };
   }
 
   getRoot(): string {

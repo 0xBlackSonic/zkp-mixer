@@ -12,6 +12,7 @@ template Withdraw() {
     signal input nullifier[256];
     signal input hashPairings[10];
     signal input hashDirections[10];
+    signal input commitments[10];
 
     // Checking the public variable nullifierHash
     component cHasher = CommitmentHasher();
@@ -39,7 +40,7 @@ template Withdraw() {
         right[i] <== d * currentHash[i];
         leafHashers[i].ins[1] <== right[i] + (1 - d) * hashPairings[i];
 
-        leafHashers[i].k <== cHasher.commitment;
+        leafHashers[i].k <== commitments[i];
         currentHash[i + 1] <== leafHashers[i].o;
     }
 

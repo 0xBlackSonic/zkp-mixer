@@ -46,6 +46,8 @@ export default function Withdraw({
           .sort((a: any, b: any) => a.args.leafIndex - b.args.leafIndex)
           .map((e: any) => BigInt(e.args.commitment));
 
+        const lastLeaf = leaves.length - 1;
+
         // Our commitment leaf
         const leafIndex: any = Number(
           events.find(
@@ -60,22 +62,27 @@ export default function Withdraw({
         }
 
         // Recreate merkle tree
-        const tree = new MerkleTree(leafIndex, leaves, 10);
+        const tree = new MerkleTree(leaves, 10);
 
         const root = tree.getRoot();
-        const isValidRoot = await contract.roots(root);
+
+        if (!(await contract.roots(root))) {
+          toast.error("Merkle tree is corrupted!");
+          return;
+        }
+
         const isSpent = await contract.nullifierHashes(
           proofElements.nullifierHash
         );
 
-        if (!isValidRoot || isSpent) {
-          toast.error("Invalid proof or already spent!");
+        if (isSpent) {
+          toast.error("Proof already spent!");
           return;
         }
 
         // Regenerate the hash pairings
-        const { hashPairings, hashDirections } =
-          tree.getHashElements(leafIndex);
+        const { hashPairings, hashDirections, commitments } =
+          tree.getHashElements(leafIndex, lastLeaf);
 
         const proofInput = {
           root,
@@ -85,6 +92,7 @@ export default function Withdraw({
           nullifier: $u.BN256ToBin(proofElements.nullifier).split(""),
           hashPairings,
           hashDirections,
+          commitments,
         };
 
         const { proof, publicSignals } = await SnarkJS.groth16.fullProve(
