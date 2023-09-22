@@ -58,6 +58,7 @@ function App() {
         theme="dark"
         toastClassName={"text-sm"}
         closeButton={false}
+        toastStyle={{ backgroundColor: "rgba(17, 24, 39, 0.95)" }}
       />
     </>
   );

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-type InjectedProviders = {
+type Provider = {
   isMetaMask?: true;
 };
 
