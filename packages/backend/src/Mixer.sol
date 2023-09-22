@@ -32,7 +32,7 @@ contract Mixer is ReentrancyGuard {
         72051951690337201200119845553030809436309900161084863070192560066843051838251
     ];
 
-    event Deposit(uint256 root, uint256[10] hashPairings, uint8[10] hashDirections);
+    event Deposit(uint256 leafIndex, uint256 commitment, uint256 timestamp);
     event Withdrawal(address to, uint256 nullifierHash);
 
     constructor(address _hasher, address _verifier) {
@@ -65,13 +65,12 @@ contract Mixer is ReentrancyGuard {
         uint256[2] memory ins;
 
         for (uint8 i = 0; i < treeLevel; i++) {
-            lastLevelHash[treeLevel] = currentHash;
-
             if (currentIdx % 2 == 0) {
                 left = currentHash;
                 right = levelDefaults[i];
                 hashPairings[i] = levelDefaults[i];
                 hashDirections[i] = 0;
+                lastLevelHash[i] = currentHash;
             } else {
                 left = lastLevelHash[i];
                 right = currentHash;
@@ -94,7 +93,7 @@ contract Mixer is ReentrancyGuard {
 
         commitments[_commitment] = true;
 
-        emit Deposit(newRoot, hashPairings, hashDirections);
+        emit Deposit(nextLeafIdx - 1, _commitment, block.timestamp);
     }
 
     function existsCommitment(uint256 _commitment) public view returns (bool) {

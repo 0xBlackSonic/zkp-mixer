@@ -6,6 +6,9 @@ import { ActionProps } from "../types/actions.type";
 
 import { Loading } from "./Loading";
 import $u from "../utils/$u";
+import { ethers } from "ethers";
+
+import { MerkleTree } from "../utils/merkleTree";
 
 export default function Withdraw({
   isDisabled,
@@ -24,16 +27,64 @@ export default function Withdraw({
         setLoading(true);
         const proofElements = JSON.parse(atob(userProof));
         const SnarkJS = window["snarkjs"];
+
+        const contract = new ethers.Contract(
+          mixerAddress,
+          mixerInterface,
+          provider
+        );
+
+        // Get all past events
+        const events = await contract.queryFilter(
+          contract.filters.Deposit(),
+          0,
+          "latest"
+        );
+
+        // leaves array
+        const leaves: bigint[] = events
+          .sort((a: any, b: any) => a.args.leafIndex - b.args.leafIndex)
+          .map((e: any) => BigInt(e.args.commitment));
+
+        // Our commitment leaf
+        const leafIndex: any = Number(
+          events.find(
+            (e: any) =>
+              e.args.commitment.toString() === proofElements.commitment
+          )?.args?.leafIndex
+        );
+
+        if (leafIndex < 0 || leafIndex === undefined) {
+          toast.error("Invalid proof!");
+          return;
+        }
+
+        // Recreate merkle tree
+        const tree = new MerkleTree(leafIndex, leaves, 10);
+
+        const root = tree.getRoot();
+        const isValidRoot = await contract.roots(root);
+        const isSpent = await contract.nullifierHashes(
+          proofElements.nullifierHash
+        );
+
+        if (!isValidRoot || isSpent) {
+          toast.error("Invalid proof or already spent!");
+          return;
+        }
+
+        // Regenerate the hash pairings
+        const { hashPairings, hashDirections } =
+          tree.getHashElements(leafIndex);
+
         const proofInput = {
-          root: $u.BNToDecimal(proofElements.root),
+          root,
           nullifierHash: proofElements.nullifierHash,
           recipient: wallet,
           secret: $u.BN256ToBin(proofElements.secret).split(""),
           nullifier: $u.BN256ToBin(proofElements.nullifier).split(""),
-          hashPairings: proofElements.hashPairings.map((n: any) =>
-            $u.BNToDecimal(n)
-          ),
-          hashDirections: proofElements.hashDirections,
+          hashPairings,
+          hashDirections,
         };
 
         const { proof, publicSignals } = await SnarkJS.groth16.fullProve(

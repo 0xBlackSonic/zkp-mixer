@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
-import { BigNumber, ethers } from "ethers";
+import { ethers } from "ethers";
 
 import { ActionProps } from "../types/actions.type";
 
@@ -53,6 +53,7 @@ export default function Deposit({
       from: wallet === null ? undefined : wallet,
       value: value,
       data: mixerInterface.encodeFunctionData("deposit", [commitment]),
+      gasLimit: 3000000,
     };
 
     try {
@@ -61,25 +62,11 @@ export default function Deposit({
 
       await txHash.wait();
 
-      const receipt = await provider.getTransactionReceipt(txHash.hash);
-      const log = receipt.logs[0];
-
-      const decodedData = mixerInterface.decodeEventLog(
-        "Deposit",
-        log.data,
-        log.topics
-      );
-
       const proofElements = {
-        root: $u.BNToDecimal(decodedData.root),
-        nullifierHash: `${nullifierHash}`,
         secret,
         nullifier,
+        nullifierHash: `${nullifierHash}`,
         commitment: `${commitment}`,
-        hashPairings: decodedData.hashPairings.map((n: BigNumber) =>
-          $u.BNToDecimal(n)
-        ),
-        hashDirections: decodedData.hashDirections,
       };
 
       updateProof(btoa(JSON.stringify(proofElements)));

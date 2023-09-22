@@ -14,19 +14,19 @@ contract MixerTest is Test {
 
     address USER = makeAddr("user");
     uint256 public constant STARTING_USER_BALANCE = 10 ether;
-    uint256 public constant AMOUNT_TO_MIX = 1 ether;
-    uint256 public constant _commitment = 17879328282226301877439992096066063816311620879615344576643209992617454820288;
+    uint256 public constant AMOUNT_TO_MIX = 0.1 ether;
+    uint256 public constant _commitment = 2007634826500347288560380066454485684764345236883944333174236827696241407853;
 
-    uint256[2] _pA = [0x1ccef610e39e01096a42cdf4fbf2386f6d6433e1ee6fdca5f54869d5e4af277b, 0x01d01c5db8a94763377a8ea1cd256be7c52fd424d3c262c7ee66f4b2396c8194];
+    uint256[2] _pA = [0x2a32b35fc557e6109335c3d75131db7f49d86d5c2feea7d36979f0555394f397, 0x1584929ded2d108af8f73138e62c6432521f81e1dbd784129a056f0532844320];
     uint256[2][2] _pB = [
-        [0x107aee81689e11252eb759143a2ff8cfcc5145b3e6e79a2741a14d2ca39f2b02, 0x0f6e84f03e424c3b3771490d9eb5bf561e5f8b396a56d8336d4a148fb4d96764],
-        [0x2bb87c79f5134aefaddc3d775199b1e24e07ed299b57cac1ba3e605f680f01f9, 0x0e787958a134ad7e8315ac103c01a1e4016fcb0af266f9edbcfef4d7bf44ba50]
+        [0x28e93229c1a1f02d7551b947e10667d26e431f295817cc8f0967a9692de0d4c8, 0x0111d78e5bf32426da87740aee4bf6cc445461abee30680ad153ea033fc53dab],
+        [0x2339559e83eb1b6e5975cc5ed1568c16617ae1ef19b03e6cfea9d4527e0aaa31, 0x11fbe7f19e28f8abf7ae455dedb698d1f1043bdc1c86215d264a5631c1e10f19]
     ];
-    uint256[2] _pC = [0x048a7b62e434f479898e5d919e5794ecfc49791ec7f2a6a9602f4a0776a09487, 0x09f88f00214d2f9f900cb2abb86e909a8300d68c3a35a19cafe8f6d7dc2f4bbc];
-    uint256[2] _pubSignals = [0x00d4975fd069aec337350f52ef4a483c25b0f6b306d4a5e0f81f2e283bda6aec, 0x1b5328bbb0457bf3bb1bd3af8779ad42c27f0c66b2e7df3bf33499a2e20d915b];
+    uint256[2] _pC = [0x14bf995ca224a0bbac0dc0e2020f5e39ff656b75cbdb406577388ab19dc7628b, 0x1133b5e71fe31ae3d4753bda793e5fba1b9f07e5c7f02989da5c345b8dcf9ceb];
+    uint256[2] _pubSignals = [0x0369462118df35f48b582d16d805915deca5a6d759747e99918ce55be63a3acd, 0x13ec3750aa7d23081bef32b193e294af9172efe9b020cd69523fd04d5400e932];
     
-    uint256 _root = 375616324574748226612136368959974177615366861412660131597095524695117818604;
-    uint256 _nullifierHash = 12359376348052244235739218173995697224051149308561270493321433319048857096539;
+    uint256 _root = 1542941502093363457024366931750970880463690003344735934593470950032411343565;
+    uint256 _nullifierHash = 9011301801169134828738630806485784610075687143355287607372773611803980654898;
     address _recipient = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
     function setUp() external {
@@ -50,7 +50,7 @@ contract MixerTest is Test {
             hoax(address(i), 1 ether);
             mixer.deposit{value: AMOUNT_TO_MIX}(uint256(i));
         }
-        assert(address(mixer).balance == 10 ether);
+        assert(address(mixer).balance == 1 ether);
     }
 
     function testDepositShouldFailIfDepositedAmountIsDifferent() public {
@@ -98,7 +98,7 @@ contract MixerTest is Test {
         hoax(_recipient, STARTING_USER_BALANCE);
         mixer.withdraw(_pA, _pB, _pC, _pubSignals);
         
-        assert(address(_recipient).balance == STARTING_USER_BALANCE + 1 ether);
+        assert(address(_recipient).balance == STARTING_USER_BALANCE + 0.1 ether);
     }
 
     function testWithdrawShouldFailIfNullifierAlreadySpent() public {
